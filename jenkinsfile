@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_USER = credentials('dockerhub-credentials').username
+        DOCKER_PASS = credentials('dockerhub-credentials').password
+        APP_EC2_IP = '<APP_EC2_PRIVATE_IP>'  // Replace this!
+    }
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/agiratech-Mahima/Mern_app.git'
+            }
+        }
+
+        stage('Build and Push Backend') {
+            steps {
+                dir('backend') {
+                    sh '''
+                    docker login -u $DOCKER_USER -p $DOCKER_PASS
+                    docker build -t $DOCKER_USER/fusion-backend:latest .
+                    docker push $DOCKER_USER/fusion-backend:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Build and Push Frontend') {
+            steps {
+                sh '''
+                docker login -u $DOCKER_USER -p $DOCKER_PASS
+                docker build -t $DOCKER_USER/fusion-frontend:latest .
+                docker push $DOCKER_USER/fusion-frontend:latest
+                '''
+            }
+        }
+
+        stage('Deploy to App EC2') {
+            steps {
+                sshagent (credentials: ['jenkins-ssh-key']) {
+                    sh '''
+                    ssh -o StrictHostKeyChecking=no ec2-user@$APP_EC2_IP << EOF
+                      docker login -u $DOCKER_USER -p $DOCKER_PASS
+                      docker stop frontend || true && docker rm frontend || true
+                      docker stop backend || true && docker rm backend || true
+                      docker pull $DOCKER_USER/fusion-frontend:latest
+                      docker pull $DOCKER_USER/fusion-backend:latest
+                      docker run -d --name frontend -p 80:80 $DOCKER_USER/fusion-frontend:latest
+                      docker run -d --name backend -p 5000:5000 $DOCKER_USER/fusion-backend:latest
+                    EOF
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Deployment Successful!'
+        }
+        failure {
+            echo '❌ Deployment Failed!'
+        }
+    }
+}
