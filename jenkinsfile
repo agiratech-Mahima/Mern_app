@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_USER = credentials('dockerhub-credentials').username
         DOCKER_PASS = credentials('dockerhub-credentials').password
-        APP_EC2_IP = '<APP_EC2_PRIVATE_IP>'  // Replace this!
+        APP_EC2_IP = '10.0.2.55'  // Replace this!
     }
 
     stages {
