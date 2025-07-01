@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USER = credentials('dockerhubCredentials').username
-        DOCKER_PASS = credentials('dockerhubCredentials').password
-        APP_EC2_IP = '10.0.2.55' 
+        APP_EC2_IP = '10.0.2.55'
     }
 
     stages {
@@ -17,39 +15,45 @@ pipeline {
         stage('Build and Push Backend') {
             steps {
                 dir('backend') {
-                    sh '''
-                    docker login -u $DOCKER_USER -p $DOCKER_PASS
-                    docker build -t $DOCKER_USER/mern_app:backend .
-                    docker push $DOCKER_USER/mern_app:backend
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                        docker login -u $DOCKER_USER -p $DOCKER_PASS
+                        docker build -t $DOCKER_USER/mern_app:backend .
+                        docker push $DOCKER_USER/mern_app:backend
+                        '''
+                    }
                 }
             }
         }
 
         stage('Build and Push Frontend') {
             steps {
-                sh '''
-                docker login -u $DOCKER_USER -p $DOCKER_PASS
-                docker build -t $DOCKER_USER/mern_app:frontend .
-                docker push $DOCKER_USER/mern_app:frontend
-                '''
+                withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    docker login -u $DOCKER_USER -p $DOCKER_PASS
+                    docker build -t $DOCKER_USER/mern_app:frontend .
+                    docker push $DOCKER_USER/mern_app:frontend
+                    '''
+                }
             }
         }
 
         stage('Deploy to App EC2') {
             steps {
                 sshagent (credentials: ['app-ec2-key']) {
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no ec2-user@$APP_EC2_IP << EOF
-                      docker login -u $DOCKER_USER -p $DOCKER_PASS
-                      docker stop frontend || true && docker rm frontend || true
-                      docker stop backend || true && docker rm backend || true
-                      docker pull $DOCKER_USER/mern_app:frontend
-                      docker pull $DOCKER_USER/mern_app:backend
-                      docker run -d --name frontend -p 80:80 $DOCKER_USER/mern_app:frontend
-                      docker run -d --name backend -p 5000:5000 $DOCKER_USER/mern_app:backend
-                    EOF
-                    '''
+                    withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$APP_EC2_IP << EOF
+                          docker login -u $DOCKER_USER -p $DOCKER_PASS
+                          docker stop frontend || true && docker rm frontend || true
+                          docker stop backend || true && docker rm backend || true
+                          docker pull $DOCKER_USER/mern_app:frontend
+                          docker pull $DOCKER_USER/mern_app:backend
+                          docker run -d --name frontend -p 80:80 $DOCKER_USER/mern_app:frontend
+                          docker run -d --name backend -p 5000:5000 $DOCKER_USER/mern_app:backend
+                        EOF
+                        '''
+                    }
                 }
             }
         }
