@@ -19,8 +19,8 @@ pipeline {
                 dir('backend') {
                     sh '''
                     docker login -u $DOCKER_USER -p $DOCKER_PASS
-                    docker build -t $DOCKER_USER/fusion-backend:latest .
-                    docker push $DOCKER_USER/fusion-backend:latest
+                    docker build -t $DOCKER_USER/mern_app:latest .
+                    docker push $DOCKER_USER/mern_app:latest
                     '''
                 }
             }
@@ -30,8 +30,8 @@ pipeline {
             steps {
                 sh '''
                 docker login -u $DOCKER_USER -p $DOCKER_PASS
-                docker build -t $DOCKER_USER/fusion-frontend:latest .
-                docker push $DOCKER_USER/fusion-frontend:latest
+                docker build -t $DOCKER_USER/mern_app:latest .
+                docker push $DOCKER_USER/mern_app:latest
                 '''
             }
         }
