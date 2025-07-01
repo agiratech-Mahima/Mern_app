@@ -19,8 +19,8 @@ pipeline {
                 dir('backend') {
                     sh '''
                     docker login -u $DOCKER_USER -p $DOCKER_PASS
-                    docker build -t $DOCKER_USER/mern_app:latest .
-                    docker push $DOCKER_USER/mern_app:latest
+                    docker build -t $DOCKER_USER/mern_app:backend .
+                    docker push $DOCKER_USER/mern_app:backend
                     '''
                 }
             }
@@ -30,8 +30,8 @@ pipeline {
             steps {
                 sh '''
                 docker login -u $DOCKER_USER -p $DOCKER_PASS
-                docker build -t $DOCKER_USER/mern_app:latest .
-                docker push $DOCKER_USER/mern_app:latest
+                docker build -t $DOCKER_USER/mern_app:frontend .
+                docker push $DOCKER_USER/mern_app:frontend
                 '''
             }
         }
