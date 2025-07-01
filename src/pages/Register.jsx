@@ -25,7 +25,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post('https://mern-stack-ecommerce-app-h5wb.onrender.com/api/auth/register', { name, email, password });
+      const response = await axios.post('http://localhost:8000/api/auth/register', { name, email, password });
       const token = response.data.token;
       localStorage.setItem('token', token);
       window.location.href = '/';

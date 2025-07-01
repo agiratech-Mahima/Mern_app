@@ -1,33 +1,13 @@
-# 1) Build stage — compile the React app
-FROM node:18-alpine AS builder
-
-LABEL org.opencontainers.image.description="Fusion Electronics Ecommerce Website frontend – a React SPA built with Material-UI, React-Router, Stripe integration and more."
-
+# React build stage
+FROM node:18-alpine AS build
 WORKDIR /app
-
-# Install deps
-COPY package.json package-lock.json ./
-RUN npm ci
-
-# Copy sources and build
-COPY public ./public
-
-COPY src    ./src
-
+COPY package*.json ./
+RUN npm install
+COPY . .
 RUN npm run build
 
-# 2) Production stage — serve static build via nginx
-FROM nginx:alpine
-
-# Provide a human-readable description for the image
-LABEL org.opencontainers.image.description="Fusion Electronics Frontend – a React SPA built with Material-UI, React-Router, Stripe integration and more."
-
-WORKDIR /usr/share/nginx/html
-
-# Remove default content, then copy in our build
-RUN rm -rf ./*
-COPY --from=builder /app/build ./
-
+# NGINX stage
+FROM nginx:stable-alpine
+COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
