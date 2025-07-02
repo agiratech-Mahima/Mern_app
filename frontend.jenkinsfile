@@ -6,18 +6,17 @@ pipeline {
     }
 
     stages {
-        stage('Clone Repo') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/agiratech-Mahima/Mern_app.git'
             }
         }
 
-        stage('Build and Push Frontend') {
+        stage('Build and Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                     docker login -u $DOCKER_USER -p $DOCKER_PASS
-
 
                     docker build -t $DOCKER_USER/mern_app:frontend .
                     docker push $DOCKER_USER/mern_app:frontend
@@ -46,10 +45,10 @@ pipeline {
 
     post {
         success {
-            echo '✅ Frontend Deployed Successfully!'
+            echo 'Frontend Deployed Successfully!'
         }
         failure {
-            echo '❌ Frontend Deployment Failed!'
+            echo 'Frontend Deployment Failed!'
         }
     }
 }
