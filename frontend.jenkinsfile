@@ -27,23 +27,7 @@ EOF
     }
 }
 
-        stage('Deploy to App EC2') {
-            steps {
-                sshagent (credentials: ['app-ec2-key']) {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP << 'ENDSSH'
-                          docker login -u $DOCKER_USER -p $DOCKER_PASS
-                          docker stop frontend || true
-                          docker rm frontend || true
-                          docker pull $DOCKER_USER/mern_app:frontend
-                          docker run -d --name frontend -p 80:80 $DOCKER_USER/mern_app:frontend
-                        ENDSSH
-                        '''
-                    }
-                }
-            }
-        }
+     
     }
 
     post {
