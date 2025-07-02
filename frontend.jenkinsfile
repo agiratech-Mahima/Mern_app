@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-alpine'
+        }
+    }
 
     environment {
         APP_EC2_IP = '10.0.2.55'
@@ -14,19 +18,16 @@ pipeline {
 
         stage('Build and Push Frontend') {
             steps {
-                dir('.') {
+                dir('src') {
                     withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
                         docker login -u $DOCKER_USER -p $DOCKER_PASS
 
-                        # Build React app
                         npm install
                         npm run build
 
-                        # Build Docker image with Nginx
+                        cd ..
                         docker build -t $DOCKER_USER/mern_app:frontend -f Dockerfile.frontend .
-
-                        # Push to DockerHub
                         docker push $DOCKER_USER/mern_app:frontend
                         '''
                     }
@@ -38,15 +39,15 @@ pipeline {
             steps {
                 sshagent (credentials: ['app-ec2-key']) {
                     withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@$APP_EC2_IP << EOF
-                          docker login -u $DOCKER_USER -p $DOCKER_PASS
-
-                          docker stop frontend || true && docker rm frontend || true
-                          docker pull $DOCKER_USER/mern_app:frontend
-                          docker run -d --name frontend -p 80:80 $DOCKER_USER/mern_app:frontend
-                        EOF
-                        '''
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP '
+                            docker login -u $DOCKER_USER -p $DOCKER_PASS &&
+                            docker stop frontend || true &&
+                            docker rm frontend || true &&
+                            docker pull $DOCKER_USER/mern_app:frontend &&
+                            docker run -d --name frontend -p 80:80 $DOCKER_USER/mern_app:frontend
+                        '
+                        """
                     }
                 }
             }
