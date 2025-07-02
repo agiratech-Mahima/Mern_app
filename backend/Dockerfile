@@ -1,20 +1,18 @@
-# Use official Node.js image
+# Use official Node.js Alpine image
 FROM node:18-alpine
-
-# Accept build-time argument
-ARG MONGO_URI
-
-# Set environment variable for runtime
-ENV MONGO_URI=$MONGO_URI
 
 WORKDIR /app
 
+# Copy dependencies and install
 COPY package*.json ./
 RUN npm install
 
+# Copy rest of the app
 COPY . .
 
 EXPOSE 5000
 
+# Start the app
 CMD ["npm", "start"]
+
 
