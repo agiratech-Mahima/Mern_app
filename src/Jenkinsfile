@@ -18,7 +18,7 @@ pipeline {
                     withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                         sh '''
                         docker login -u $DOCKER_USER -p $DOCKER_PASS
-                        docker build -t $DOCKER_USER/mern_app:frontend -f Dockerfile.frontend .
+                       docker build -t $DOCKER_USER/mern_app:frontend .
                         docker push $DOCKER_USER/mern_app:frontend
                         '''
                     }
