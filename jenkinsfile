@@ -8,17 +8,20 @@ pipeline {
     stages {
         stage('Clone Repo') {
             steps {
-                  git branch: 'main', url: 'https://github.com/agiratech-Mahima/Mern_app.git'
+                git branch: 'main', url: 'https://github.com/agiratech-Mahima/Mern_app.git'
             }
         }
 
         stage('Build and Push Backend') {
             steps {
                 dir('backend') {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+                        string(credentialsId: 'mongoUriCredential', variable: 'MONGO_URI')
+                    ]) {
                         sh '''
                         docker login -u $DOCKER_USER -p $DOCKER_PASS
-                        docker build -t $DOCKER_USER/mern_app:backend .
+                        docker build --build-arg MONGO_URI=$MONGO_URI -t $DOCKER_USER/mern_app:backend .
                         docker push $DOCKER_USER/mern_app:backend
                         '''
                     }
@@ -26,31 +29,31 @@ pipeline {
             }
         }
 
-      
-
-       stage('Deploy to App EC2') {
-    steps {
-        sshagent (credentials: ['app-ec2-key']) {
-            withCredentials([usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                sh '''
-                ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP "docker login -u $DOCKER_USER -p $DOCKER_PASS && \
-                docker stop backend || true && docker rm backend || true && \
-                docker pull $DOCKER_USER/mern_app:backend && \
-                docker run -d --name backend -p 5000:5000 $DOCKER_USER/mern_app:backend"
-                '''
+        stage('Deploy to App EC2') {
+            steps {
+                sshagent (credentials: ['app-ec2-key']) {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+                        string(credentialsId: 'mongoUriCredential', variable: 'MONGO_URI')
+                    ]) {
+                        sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP "docker login -u $DOCKER_USER -p $DOCKER_PASS && \
+                        docker stop backend || true && docker rm backend || true && \
+                        docker pull $DOCKER_USER/mern_app:backend && \
+                        docker run -d --name backend -p 5000:5000 -e MONGO_URI=$MONGO_URI $DOCKER_USER/mern_app:backend"
+                        '''
+                    }
+                }
             }
         }
-    }
-}
-
     }
 
     post {
         success {
-            echo '✅ Deployment Successful!'
+            echo 'Deployment Successful!'
         }
         failure {
-            echo '❌ Deployment Failed!'
+            echo 'Deployment Failed!'
         }
     }
 }
