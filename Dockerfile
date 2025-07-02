@@ -1,18 +1,17 @@
+# ---- Build Stage ----
 FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy only package.json first (for caching)
-COPY src/package*.json ./
+# Copy only necessary files for install
+COPY package*.json ./
+COPY public/ ./public/
+COPY src/ ./src/
 
 RUN npm install
-
-# Copy the rest of the frontend code
-COPY src/ .
-
 RUN npm run build
 
-# Use Nginx to serve build
+# ---- Production Stage ----
 FROM nginx:alpine
 
 COPY --from=build /app/build /usr/share/nginx/html
@@ -20,4 +19,5 @@ COPY --from=build /app/build /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
+
 
