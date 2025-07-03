@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_EC2_IP = '10.0.2.55'   // ✅ Private IP of App EC2 (inside VPC)
+        APP_EC2_IP = '10.0.2.55'   // ✅ Private IP of App EC2 (inside VPC
     }
 
     stages {
