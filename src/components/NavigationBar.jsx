@@ -66,7 +66,7 @@ function NavigationBar({ cartItemCount }) {
       }
       setLoading(true); // Set loading to true when search is triggered
       try {
-        const response = await axios.get(`http://localhost:8000/api/search?q=${query}`);
+        const response = await axios.get(`http://mernloadbalancer-1158835986.us-east-1.elb.amazonaws.com/api/search?q=${query}`);
         setSearchResults(response.data);
       } catch (error) {
         console.error('Error fetching search results:', error);
