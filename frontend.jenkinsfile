@@ -26,6 +26,17 @@ pipeline {
             }
         }
 
+stage('Copy Build to EC2') {
+  steps {
+    sshagent (credentials: ['app-ec2-key']) {
+      sh '''
+        scp -o StrictHostKeyChecking=no -r build/ ubuntu@$APP_EC2_IP:/usr/share/nginx/html
+      '''
+    }
+  }
+}
+
+
         stage('Deploy to App EC2') {
             steps {
                 sshagent (credentials: ['app-ec2-key']) {
