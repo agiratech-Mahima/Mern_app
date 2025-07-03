@@ -42,13 +42,14 @@ pipeline {
                   docker stop backend || true
                   docker rm backend || true
                   docker pull $DOCKER_USER/mern_app:backend
-                  docker run -d --name backend --network host -e MONGO_URI="$MONGO_URI" $DOCKER_USER/mern_app:backend
+                  docker run -d --name backend --network host -e MONGO_URI="\$MONGO_URI" $DOCKER_USER/mern_app:backend
                 '
                 """
             }
         }
     }
 }
+
 
 
     }
