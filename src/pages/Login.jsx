@@ -16,7 +16,7 @@ function Login() {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login', { email, password });
+      const response = await axios.post('http://mernloadbalancer-1158835986.us-east-1.elb.amazonaws.com/api/auth/login', { email, password });
       const token = response.data.token;
       localStorage.setItem('MERNEcommerceToken', token);
       window.location.href = '/';
