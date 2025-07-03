@@ -14,7 +14,7 @@ function ProductDetails({ addToCart }) {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const response = await axios.get(`http://localhost:8000/api/products/${id}`);
+        const response = await axios.get(`http://mernloadbalancer-1158835986.us-east-1.elb.amazonaws.com/api/products/${id}`);
         if (response.data) {
           setProduct(response.data);
           setUserRating(response.data.rating);
