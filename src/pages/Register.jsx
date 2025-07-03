@@ -25,7 +25,7 @@ function Register() {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/register', { name, email, password });
+      const response = await axios.post('http://mernloadbalancer-1158835986.us-east-1.elb.amazonaws.com/api/auth/register', { name, email, password });
       const token = response.data.token;
       localStorage.setItem('token', token);
       window.location.href = '/';
