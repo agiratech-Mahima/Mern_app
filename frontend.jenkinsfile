@@ -20,7 +20,7 @@ pipeline {
               docker stop frontend || true
               docker rm frontend || true
               docker pull mahimakumari124/mern_app:frontend
-              docker run -d --name frontend -p 80:80 mahimakumari124/mern_app:frontend
+              docker run -d --name frontend -p 3000:80 mahimakumari124/mern_app:frontend
 EOF
             '''
         }
