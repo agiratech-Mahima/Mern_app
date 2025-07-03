@@ -12,41 +12,32 @@ pipeline {
             }
         }
 
-        stage('Build and Push Frontend Image') {
+        stage('Build React App') {
             steps {
-                withCredentials([
-                    usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')
-                ]) {
+                sh '''
+                    npm install
+                    npm run build
+                '''
+            }
+        }
+
+        stage('Copy Build to EC2') {
+            steps {
+                sshagent (credentials: ['app-ec2-key']) {
                     sh '''
-                    docker login -u $DOCKER_USER -p $DOCKER_PASS
-                    docker build -t $DOCKER_USER/mern_app:frontend .
-                    docker push $DOCKER_USER/mern_app:frontend
+                        scp -o StrictHostKeyChecking=no -r build/ ubuntu@$APP_EC2_IP:/usr/share/nginx/html
                     '''
                 }
             }
         }
 
-stage('Copy Build to EC2') {
-  steps {
-    sshagent (credentials: ['app-ec2-key']) {
-      sh '''
-        scp -o StrictHostKeyChecking=no -r build/ ubuntu@$APP_EC2_IP:/usr/share/nginx/html
-      '''
-    }
-  }
-}
-
-
-        stage('Deploy to App EC2') {
+        stage('Restart NGINX') {
             steps {
                 sshagent (credentials: ['app-ec2-key']) {
                     sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP 'bash -s' <<EOF
-                      docker stop frontend || true
-                      docker rm frontend || true
-                      docker pull mahimakumari124/mern_app:frontend
-                      docker run -d --name frontend -p 3000:80 mahimakumari124/mern_app:frontend
-EOF
+                        ssh -o StrictHostKeyChecking=no ubuntu@$APP_EC2_IP '
+                          sudo systemctl restart nginx
+                        '
                     '''
                 }
             }
@@ -55,7 +46,7 @@ EOF
 
     post {
         success {
-            echo '✅ Frontend Deployed Successfully!'
+            echo '✅ Frontend Deployed Successfully via NGINX on EC2!'
         }
         failure {
             echo '❌ Frontend Deployment Failed!'
