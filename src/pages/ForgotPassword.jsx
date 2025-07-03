@@ -16,7 +16,7 @@ function ForgotPassword() {
 
     try {
       // Verify email
-      await axios.post('http://localhost:8000/api/auth/verify-email', { email });
+      await axios.post('http://mernloadbalancer-1158835986.us-east-1.elb.amazonaws.com/api/auth/verify-email', { email });
       // If successful, navigate to reset password page
       navigate('/reset-password');
     } catch (err) {
