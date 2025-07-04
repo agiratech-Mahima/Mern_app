@@ -57,13 +57,16 @@ pipeline {
 
 
     }
-
-    post {
-        success {
-            echo 'Deployment Successful!'
-        }
-        failure {
-            echo 'Deployment Failed!'
-        }
+post {
+    success {
+        mail to: 'mahimakumari416@gmail.com',
+             subject: "Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+             body: "Check the build: ${env.BUILD_URL}"
     }
+    failure {
+        mail to: 'mahimakumari416@gmail.com',
+             subject: "Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+             body: "Something went wrong. Check logs: ${env.BUILD_URL}"
+    }
+}
 }
