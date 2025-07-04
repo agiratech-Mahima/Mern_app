@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        APP_EC2_IP = '10.0.2.55'  // Replace with your actual private IP
+        APP_EC2_IP = '10.0.2.55'  //private IP
     }
 
     stages {
