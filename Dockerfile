@@ -11,9 +11,14 @@ COPY src/ ./src/
 RUN npm install
 RUN npm run build
 
+<<<<<<< HEAD
 # ---- Production Stage ----
 FROM nginx:alpine
 
+=======
+#NGINX stage ---
+FROM nginx:stable-alpine
+>>>>>>> changes committed
 COPY --from=build /app/build /usr/share/nginx/html
 COPY default.conf /etc/nginx/conf.d/default.conf
 
