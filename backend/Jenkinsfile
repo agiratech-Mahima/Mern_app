@@ -18,6 +18,7 @@ pipeline {
                     withCredentials([
                         usernamePassword(credentialsId: 'dockerhubCredentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
                         string(credentialsId: 'MONGO_URI', variable: 'MONGO_URI')
+                         string(credentialsId: 'JWT_SECRET', variable: 'JWT_SECRET') 
                     ]) {
                         sh '''
                         docker login -u $DOCKER_USER -p $DOCKER_PASS
